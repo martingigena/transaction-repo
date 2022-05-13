@@ -86,7 +86,11 @@ public class TransactionController {
      * @return Status
      */
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateTransaction(@PathVariable Long id, @RequestBody  Transaction transaction) {
+    public ResponseEntity<?> updateTransaction(@PathVariable Long id, @RequestBody(required = false) Transaction transaction) {
+        Optional<Transaction> oTransactionBody = Optional.ofNullable(transaction);
+        if (!oTransactionBody.isPresent()){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Request body is empty.");
+        }
         Optional<Transaction> oTransactionToFind = Optional.ofNullable(getTransactionById(id));
         if (!oTransactionToFind.isPresent()){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Transaction not found.");
@@ -95,6 +99,6 @@ public class TransactionController {
         oTransactionToFind.get().setType(transaction.getType());
         oTransactionToFind.get().setAmount(transaction.getAmount());
         oTransactionToFind.get().setParent_id(transaction.getParent_id());
-      return ResponseEntity.status(HttpStatus.OK).body("Updated");
+      return ResponseEntity.status(HttpStatus.OK).body("Updated"); 
     }
 }
