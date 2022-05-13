@@ -3,8 +3,11 @@ package com.mgigena.transactions.controllers;
 import com.mgigena.transactions.entities.Transaction;
 import com.mgigena.transactions.services.TransactionServiceImp;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.swing.text.html.Option;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -75,9 +78,23 @@ public class TransactionController {
         return transactionsList.stream().filter(t -> t.getType().equals(type)).map(t->t.getTransaction_id()).collect(Collectors.toList());
     }
 
+    /**
+     * Given an id and a transaction object this update the transaction with the new data
+     * Header = "key":"Content-Type","value":"application/json"
+     * @param id Long
+     * @param transaction Json object
+     * @return Status
+     */
     @PutMapping("/{id}")
-    public String updateTransaction(@PathVariable Long id,@RequestBody Transaction transaction) {
+    public ResponseEntity<?> updateTransaction(@PathVariable Long id, @RequestBody  Transaction transaction) {
+        Optional<Transaction> oTransactionToFind = Optional.ofNullable(getTransactionById(id));
+        if (!oTransactionToFind.isPresent()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Transaction not found.");
+        }
 
-        return null;
+        oTransactionToFind.get().setType(transaction.getType());
+        oTransactionToFind.get().setAmount(transaction.getAmount());
+        oTransactionToFind.get().setParent_id(transaction.getParent_id());
+      return ResponseEntity.status(HttpStatus.OK).body("Updated");
     }
 }
