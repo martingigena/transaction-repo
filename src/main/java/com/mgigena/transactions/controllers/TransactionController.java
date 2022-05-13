@@ -41,7 +41,7 @@ public class TransactionController {
         boolean transactionFound = oTransaction.isPresent();
         Transaction rTransaction = transactionFound ? oTransaction.get():null;
         System.out.println(rTransaction);//Eliminar al finalizar
-        return rTransaction;
+        return transactionsList.stream().filter(t->t.getTransaction_id().equals(id)).findFirst().orElse(null);
     }
     @GetMapping("/sum/{id}")
     public List<Transaction> getAmountSumById(@PathVariable Long id){
