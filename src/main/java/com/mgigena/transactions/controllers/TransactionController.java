@@ -5,10 +5,7 @@ import com.mgigena.transactions.services.TransactionServiceImp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -40,8 +37,11 @@ public class TransactionController {
      */
     @GetMapping("/{id}")
     public Transaction getTransactionById(@PathVariable Long id){
-        System.out.println(transactionsList.stream().filter(t->t.getTransaction_id().equals(id)).findFirst().get());//Eliminar al finalizar
-        return transactionsList.stream().filter(t->t.getTransaction_id().equals(id)).findFirst().get();
+        Optional<Transaction> oTransaction = transactionsList.stream().filter(t->t.getTransaction_id().equals(id)).findFirst();
+        boolean transactionFound = oTransaction.isPresent();
+        Transaction rTransaction = transactionFound ? oTransaction.get():null;
+        System.out.println(rTransaction);//Eliminar al finalizar
+        return rTransaction;
     }
     @GetMapping("/sum/{id}")
     public List<Transaction> getAmountSumById(@PathVariable Long id){
