@@ -2,21 +2,23 @@ package com.mgigena.transactions.entities;
 
 import lombok.*;
 
-import javax.persistence.*;
-
-@Entity
-@Table(name = "transactions")
+//@Entity
+//@Table(name = "transactions")
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode
 public class Transaction {
 
-    @Setter(AccessLevel.NONE)
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    /*@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)*/
     private Long transaction_id;
-    private double amount;
+    //@Column(nullable = false)
     private String type;
+    //@Column(nullable = false)
+    private double amount;
     private Long parent_id;
 }

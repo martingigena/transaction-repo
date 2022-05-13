@@ -1,4 +1,7 @@
 package com.mgigena.transactions.repository;
 
-public interface ITransactionRepository {
+import com.mgigena.transactions.entities.Transaction;
+import org.springframework.data.repository.CrudRepository;
+
+public interface ITransactionRepository /*extends CrudRepository<Transaction, Long> */{
 }
