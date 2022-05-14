@@ -86,7 +86,7 @@ public class TransactionServiceImp implements ITransactionService {
                 .collect(Collectors.toList());
     }
 
-    public void save(Transaction transaction){
+    public Transaction save(Transaction transaction){
         transactionsList.stream()
                 .filter(t->t.getTransaction_id().equals(transaction.getTransaction_id()))
                 .forEach(t-> {
@@ -94,6 +94,10 @@ public class TransactionServiceImp implements ITransactionService {
                     t.setAmount(transaction.getAmount());
                     t.setParent_id(transaction.getParent_id());
                 });
+        return transactionsList.stream()
+                .filter(t->t.getTransaction_id().equals(transaction.getTransaction_id()))
+                .findFirst()
+                .get();
     };
 
     private boolean listOfTransactionsNull() {
