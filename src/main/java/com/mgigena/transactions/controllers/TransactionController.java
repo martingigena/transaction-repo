@@ -17,10 +17,10 @@ public class TransactionController {
 
     //FAKE DATA
     private List<Transaction> transactionsList = new ArrayList<>(Arrays.asList(
-            new Transaction(10L, "cars", 1000,0L),
-            new Transaction(11L, "shopping", 5000,0L),
-            new Transaction(12L, "market", 10000,0L),
-            new Transaction(13L, "cars", 6000,0L)
+            new Transaction(10L, "cars", 1000,null),
+            new Transaction(11L, "shopping", 5000,10L),
+            new Transaction(12L, "market", 10000,null),
+            new Transaction(13L, "cars", 6000,null)
     ));
 
     /**
@@ -46,10 +46,33 @@ public class TransactionController {
         System.out.println(rTransaction);//Eliminar al finalizar
         return transactionsList.stream().filter(t->t.getTransaction_id().equals(id)).findFirst().orElse(null);
     }
-    @GetMapping("/sum/{id}")
-    public List<Transaction> getAmountSumById(@PathVariable Long id){
 
-        return null;
+    /**
+     * Return the sum between the amount of the given transaction and all those that have that transaction as their parent.
+     * @param id Long
+     * @return ResponseEntity
+     */
+    @GetMapping("/sum/{id}")
+    public ResponseEntity<?> getAmountSumById(@PathVariable Long id){
+        Optional<Transaction> oTransactionToFind = Optional.ofNullable(getTransactionById(id));
+        if (!oTransactionToFind.isPresent()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Transaction not found.");
+        }
+
+        double sum = oTransactionToFind.get().getAmount();
+
+        List <Transaction> parentListTransaction = transactionsList.stream()
+                .filter(t->Objects.nonNull(t.getParent_id()))
+                .filter(t->t.getParent_id().equals(id))
+                .collect(Collectors.toList());
+
+        if (parentListTransaction.isEmpty()){
+            return ResponseEntity.status(HttpStatus.OK).body("sum = " + sum);
+        }
+
+        sum += parentListTransaction.stream().mapToDouble(Transaction::getAmount).sum();
+
+        return ResponseEntity.status(HttpStatus.OK).body("sum = " + sum);
     }
 
     /**
@@ -73,7 +96,6 @@ public class TransactionController {
         transactionsList.stream()
                 .filter(t -> t.getType().equals(type))
                 .map(t->t.getTransaction_id())
-                .collect(Collectors.toList())
                 .forEach(t-> System.out.println(t.toString()));
         return transactionsList.stream().filter(t -> t.getType().equals(type)).map(t->t.getTransaction_id()).collect(Collectors.toList());
     }
@@ -99,6 +121,6 @@ public class TransactionController {
         oTransactionToFind.get().setType(transaction.getType());
         oTransactionToFind.get().setAmount(transaction.getAmount());
         oTransactionToFind.get().setParent_id(transaction.getParent_id());
-      return ResponseEntity.status(HttpStatus.OK).body("Updated"); 
+      return ResponseEntity.status(HttpStatus.OK).body("Updated");
     }
 }
