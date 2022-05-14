@@ -9,5 +9,8 @@ public interface ITransactionService {
 /*
     public Optional<Transaction> findById(Long Id);
 
-    public Transaction save(Transaction transaction);*/
+    public Transaction save(Transaction transaction);
+
+    public List<Transaction> findByParent_Id(Long parent_id);
+    */
 }

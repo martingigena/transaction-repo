@@ -26,6 +26,10 @@ public class TransactionServiceImp implements ITransactionService {
     public Transaction save(Transaction transaction) {
        return transactionRepository.save(transaction);
     }
+
+    public List<Transaction> findByParentId(Long parentId){
+        return transactionRepository.findByParent_Id(Long parent_id);
+    }
     */
 
 }
