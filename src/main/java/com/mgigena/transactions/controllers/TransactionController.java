@@ -6,8 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import javax.swing.text.html.Option;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -17,10 +15,10 @@ public class TransactionController {
 
     //FAKE DATA
     private List<Transaction> transactionsList = new ArrayList<>(Arrays.asList(
-            new Transaction(10L, "cars", 1000,null),
-            new Transaction(11L, "shopping", 5000,10L),
-            new Transaction(12L, "market", 10000,null),
-            new Transaction(13L, "cars", 6000,null)
+            new Transaction(10L,"cars",1000,null),
+            new Transaction(11L,"shopping",5000,10L),
+            new Transaction(12L,"market",8000,null),
+            new Transaction(13L,"cars",7000,null)
     ));
 
     /**
@@ -29,8 +27,11 @@ public class TransactionController {
      */
     @GetMapping()
     public List<Transaction> getAll(){
-        transactionsList.stream().forEach(t-> System.out.println(t.toString())); //Eliminar al finalizar
-        return transactionsList;
+        Optional<List<Transaction>> optionalList = Optional.ofNullable(transactionsList);
+        if (!optionalList.isPresent()) {
+            return null;
+        }
+        return transactionsList.stream().filter(t -> Objects.nonNull(t)).collect(Collectors.toList());
     }
 
     /**
@@ -40,11 +41,14 @@ public class TransactionController {
      */
     @GetMapping("/{id}")
     public Transaction getTransactionById(@PathVariable Long id){
-        Optional<Transaction> oTransaction = transactionsList.stream().filter(t->t.getTransaction_id().equals(id)).findFirst();
-        boolean transactionFound = oTransaction.isPresent();
-        Transaction rTransaction = transactionFound ? oTransaction.get():null;
-        System.out.println(rTransaction);//Eliminar al finalizar
-        return transactionsList.stream().filter(t->t.getTransaction_id().equals(id)).findFirst().orElse(null);
+        Optional<List<Transaction>> optionalList = Optional.ofNullable(transactionsList);
+        if (!optionalList.isPresent()) {
+            return null;
+        }
+        //It is supposed to be PK so it should never be null.
+        return transactionsList.stream()
+                .filter(t->t.getTransaction_id().equals(id))
+                .findFirst().orElse(null);
     }
 
     /**
@@ -62,7 +66,7 @@ public class TransactionController {
         double sum = oTransactionToFind.get().getAmount();
 
         List <Transaction> parentListTransaction = transactionsList.stream()
-                .filter(t->Objects.nonNull(t.getParent_id()))
+                .filter(t->Objects.nonNull(t.getParent_id())) //avoid NPE
                 .filter(t->t.getParent_id().equals(id))
                 .collect(Collectors.toList());
 
@@ -82,22 +86,15 @@ public class TransactionController {
      */
     @GetMapping("/types/{type}")
     public List<Long> findAllTransactionsByType(@PathVariable String type){
-
-
-        //Si lo tuviera que ir a buscar a la DB tendria que fijarme si esta para evitar NPE
-        /*
-        Optional<Transaction> oTransaction = transactionService.findByType(type);
-        if (!oTransaction.isPresent()) {
-            return Collections.emptyList(); //Pongo un emptyList pero podria ser un ResponseEntity.notFound() u otra cosa
-        }*/
-        /**
-         *  Recordatorio: Eliminar al finalizar
-         */
-        transactionsList.stream()
+        Optional<List<Transaction>> optionalList = Optional.ofNullable(transactionsList);
+        if (!optionalList.isPresent()) {
+            return null;
+        }
+        return transactionsList.stream()
+                .filter(t->Objects.nonNull(t.getType())) //avoid NPE
                 .filter(t -> t.getType().equals(type))
                 .map(t->t.getTransaction_id())
-                .forEach(t-> System.out.println(t.toString()));
-        return transactionsList.stream().filter(t -> t.getType().equals(type)).map(t->t.getTransaction_id()).collect(Collectors.toList());
+                .collect(Collectors.toList());
     }
 
     /**
