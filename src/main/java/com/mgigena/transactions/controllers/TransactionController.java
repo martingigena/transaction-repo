@@ -92,7 +92,7 @@ public class TransactionController {
         oTransactionToFind.get().setParent_id(transaction.getParent_id());
         transactionServiceImp.save(oTransactionToFind.get());
 
-      return ResponseEntity.status(HttpStatus.OK).body("Updated");
+      return ResponseEntity.status(HttpStatus.OK).body(transactionServiceImp.save(oTransactionToFind.get()));
     }
 
 
