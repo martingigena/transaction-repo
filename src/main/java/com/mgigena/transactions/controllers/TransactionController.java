@@ -13,25 +13,15 @@ import java.util.stream.Collectors;
 @RequestMapping("/transactions")
 public class TransactionController {
 
-    //FAKE DATA
-    private List<Transaction> transactionsList = new ArrayList<>(Arrays.asList(
-            new Transaction(10L,"cars",1000,null),
-            new Transaction(11L,"shopping",5000,10L),
-            new Transaction(12L,"market",8000,null),
-            new Transaction(13L,"cars",7000,null)
-    ));
-
+     @Autowired
+     TransactionServiceImp transactionServiceImp;
     /**
      *  List all transactions
      * @return List<Tramsaction>
      */
     @GetMapping()
     public List<Transaction> getAll(){
-        Optional<List<Transaction>> optionalList = Optional.ofNullable(transactionsList);
-        if (!optionalList.isPresent()) {
-            return null;
-        }
-        return transactionsList.stream().filter(t -> Objects.nonNull(t)).collect(Collectors.toList());
+        return  transactionServiceImp.getAll();
     }
 
     /**
@@ -41,14 +31,7 @@ public class TransactionController {
      */
     @GetMapping("/{id}")
     public Transaction getTransactionById(@PathVariable Long id){
-        Optional<List<Transaction>> optionalList = Optional.ofNullable(transactionsList);
-        if (!optionalList.isPresent()) {
-            return null;
-        }
-        //It is supposed to be PK so it should never be null.
-        return transactionsList.stream()
-                .filter(t->t.getTransaction_id().equals(id))
-                .findFirst().orElse(null);
+       return transactionServiceImp.getTransactionById(id).orElse(null);
     }
 
     /**
@@ -58,17 +41,14 @@ public class TransactionController {
      */
     @GetMapping("/sum/{id}")
     public ResponseEntity<?> getAmountSumById(@PathVariable Long id){
-        Optional<Transaction> oTransactionToFind = Optional.ofNullable(getTransactionById(id));
+        Optional<Transaction> oTransactionToFind = Optional.ofNullable(transactionServiceImp.getTransactionById(id).orElse(null));
         if (!oTransactionToFind.isPresent()){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Transaction not found.");
         }
 
         double sum = oTransactionToFind.get().getAmount();
 
-        List <Transaction> parentListTransaction = transactionsList.stream()
-                .filter(t->Objects.nonNull(t.getParent_id())) //avoid NPE
-                .filter(t->t.getParent_id().equals(id))
-                .collect(Collectors.toList());
+        List <Transaction> parentListTransaction = transactionServiceImp.getByParent_Id(id);
 
         if (parentListTransaction.isEmpty()){
             return ResponseEntity.status(HttpStatus.OK).body("sum = " + sum);
@@ -85,16 +65,8 @@ public class TransactionController {
      * @return List<Long>
      */
     @GetMapping("/types/{type}")
-    public List<Long> findAllTransactionsByType(@PathVariable String type){
-        Optional<List<Transaction>> optionalList = Optional.ofNullable(transactionsList);
-        if (!optionalList.isPresent()) {
-            return null;
-        }
-        return transactionsList.stream()
-                .filter(t->Objects.nonNull(t.getType())) //avoid NPE
-                .filter(t -> t.getType().equals(type))
-                .map(t->t.getTransaction_id())
-                .collect(Collectors.toList());
+    public List<Long> getAllTransactionsByType(@PathVariable String type){
+        return transactionServiceImp.getAllTransactionsByType(type);
     }
 
     /**
@@ -110,7 +82,7 @@ public class TransactionController {
         if (!oTransactionBody.isPresent()){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Request body is empty.");
         }
-        Optional<Transaction> oTransactionToFind = Optional.ofNullable(getTransactionById(id));
+        Optional<Transaction> oTransactionToFind = transactionServiceImp.getTransactionById(id);
         if (!oTransactionToFind.isPresent()){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Transaction not found.");
         }
@@ -118,6 +90,10 @@ public class TransactionController {
         oTransactionToFind.get().setType(transaction.getType());
         oTransactionToFind.get().setAmount(transaction.getAmount());
         oTransactionToFind.get().setParent_id(transaction.getParent_id());
+        transactionServiceImp.save(oTransactionToFind.get());
+
       return ResponseEntity.status(HttpStatus.OK).body("Updated");
     }
+
+
 }
